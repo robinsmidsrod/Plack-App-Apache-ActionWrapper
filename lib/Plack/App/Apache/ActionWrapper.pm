@@ -5,7 +5,7 @@
 package Plack::App::Apache::ActionWrapper;
 use strict;
 use warnings;
-use base 'Plack::Middleware';
+use base 'Plack::Component';
 
 =encoding utf8
 
@@ -88,7 +88,7 @@ systems that provide it to diminish the memory usage.
 
 =method call
 
-The main handler that will be returned by the C<to_app> method inherited from L<Plack::Middleware>.
+The main handler that will be returned by the C<to_app> method inherited from L<Plack::Component>.
 
 =cut
 
