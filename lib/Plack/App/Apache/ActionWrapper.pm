@@ -3,8 +3,6 @@
 # ABSTRACT: Wrapper for Apache2 Action directive for running PSGI apps on shared hosting with FastCGI
 
 package Plack::App::Apache::ActionWrapper;
-our $VERSION = '0.01';
-
 use strict;
 use warnings;
 use base 'Plack::Middleware';
