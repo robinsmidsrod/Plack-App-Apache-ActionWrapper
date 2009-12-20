@@ -3,11 +3,96 @@
 # ABSTRACT: Wrapper for Apache2 Action directive for running PSGI apps on shared hosting with FastCGI
 
 package Plack::App::Apache::ActionWrapper;
+our $VERSION = '0.01';
 
 use strict;
 use warnings;
+use base 'Plack::Middleware';
 
-use parent qw/Plack::Middleware/;
+=encoding utf8
+
+=head1 SYNOPSIS
+
+    ------------- .htaccess -----------------
+    AddHandler fcgi-script .fcgi
+    Action psgi-script /cgi-bin/psgi.fcgi
+    AddHandler psgi-script .psgi
+
+    DirectoryIndex index.psgi
+
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.*)$ index.psgi/$1 [QSA,L]
+
+    ------------- psgi.fcgi -----------------
+    #!/usr/bin/env perl
+
+    use strict;
+    use warnings;
+
+    # Change this line if you use local::lib or need
+    # specific libraries loaded for your application
+    use lib '/home/robin/perl5/lib/perl5';
+
+    use Plack::App::Apache::ActionWrapper;
+    my $app = Plack::App::Apache::ActionWrapper->new->enable_debug->to_app;
+
+    # Run the actual app
+    use Plack::Server::FCGI;
+    Plack::Server::FCGI->new->run($app);
+
+    1;
+
+    ------------- index.psgi -----------------
+    #!/usr/bin/env plackup
+
+    use strict;
+    use warnings;
+
+    my $app = sub {
+        my $env = shift;
+        return [
+            200,
+            [ 'Content-Type' => 'text/plain' ],
+            [
+                "This is the index.\n",
+                'PATH_INFO=' . $env->{'PATH_INFO'} . "\n",
+                'PATH_TRANSLATED=' . $env->{'PATH_TRANSLATED'} . "\n",
+            ],
+        ];
+    };
+
+=cut
+
+=head1 DESCRIPTION
+
+The PSGI web application specification is awesome. Plack is awesome aswell.
+Running PSGI apps using plackup in development is super easy.
+
+But what do you do when you want to deploy your PSGI app on shared hosting?
+You can deploy it using traditional CGI, but if you're dealing with
+something like Moose or Catalyst-based apps it's bound to be slow.
+
+So your shared hosting provider has provided you with FastCGI support to
+mitigate that problem. But because FastCGIExternalServer cannot be defined
+in .htaccess you can only run dynamic FastCGI applications.
+
+Your immediate reaction is to define C<AddHandler fcgi-script .psgi> in your
+.htaccess and use plackup on the shebang line to run your PSGI app. But that
+doesn't work if you use local::lib, because @INC is not setup properly.
+
+By using a wrapper as specified in the synopsis you can avoid having to type
+in C<use lib 'XXX'> in every one of your .psgi files. Another benefit is
+that you can preload modules to benefit from copy-on-write on operating
+systems that provide it to diminish the memory usage.
+
+=cut
+
+=method call
+
+The main handler that will be returned by the C<to_app> method inherited from L<Plack::Middleware>.
+
+=cut
 
 sub call {
     my ($self, $env) = @_;
@@ -30,17 +115,35 @@ sub call {
     return $app->($env);
 }
 
+=method enable_debug
+
+Mutator to enable debug output if no path was found in PATH_TRANSLATED. Allows chaining.
+
+=cut
+
 sub enable_debug {
     my ($self) = @_;
     $self->{'debug'} = 1;
     return $self;
 }
 
+=method disable_debug
+
+Mutator to disable debug output if no path was found in PATH_TRANSLATED. Allows chaining.
+
+=cut
+
 sub disable_debug {
     my ($self) = @_;
     delete $self->{'debug'};
     return $self;
 }
+
+=method is_debug_enabled
+
+Accessor to determine if debug is enabled or not. Debug is disabled by default.
+
+=cut
 
 sub is_debug_enabled {
     my ($self) = @_;
