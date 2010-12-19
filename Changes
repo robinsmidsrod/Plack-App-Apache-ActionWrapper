@@ -1,8 +1,10 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+    * Changed to semantic versioning.
+    * Various code cleanup.
 
 0.02      2009-12-20 18:25:58 Europe/Oslo
 
 0.01      2009-12-20 17:38:51 Europe/Oslo
-    Initial release.
+    * Initial release.
