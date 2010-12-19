@@ -5,6 +5,7 @@ use warnings;
 
 package Plack::App::Apache::ActionWrapper;
 use base 'Plack::Component';
+use File::Spec;
 
 # ABSTRACT: Wrapper for Apache2 Action directive for running PSGI apps on shared hosting with FastCGI
 
@@ -75,21 +76,18 @@ sub _resolve_app_filename {
 
     my $path_translated = $env->{'PATH_TRANSLATED'} || "";
 
+    # Split path into filesystem parts according to OS specific separator
+    my ($vol, $pt_dir) = File::Spec->splitpath($path_translated);
+    my @path_parts = File::Spec->splitdir($pt_dir);
+
     # Figure out which part of the path is actually the psgi file
-    my @path_parts = split(m{/}, $path_translated);
-    while ( ! -r join("/", @path_parts) ) {
-        last if @path_parts == 0; # Break out if we're at the end
-        pop @path_parts;
+    while ( not -r $path_translated and @path_parts ) {
+        my $f = pop @path_parts;
+        $path_translated = File::Spec->catpath(
+            $vol, File::Spec->catdir(@path_parts), $f
+        );
     }
-
-    # Return undef (that is, no app) if no path part was a readable file
-    return if @path_parts == 0;
-
-    # Execute the contents of the file and return last variable defined in it
-    my $psgi_file = join("/", @path_parts );
-
-    # Cache the app to allow persistent running
-    return $psgi_file;
+    return -r $path_translated && $path_translated;
 }
 
 sub _get_app {
@@ -172,8 +170,8 @@ __END__
     my $app = Plack::App::Apache::ActionWrapper->new->enable_debug->to_app;
 
     # Run the actual app
-    use Plack::Server::FCGI;
-    Plack::Server::FCGI->new->run($app);
+    use Plack::Handler::FCGI;
+    Plack::Handler::FCGI->new->run($app);
 
     1;
 

@@ -3,6 +3,8 @@ Revision history for {{$dist->name}}
 {{$NEXT}}
     * Changed to semantic versioning.
     * Various code cleanup.
+    * RT #63825: Added patch from Ron Schmidt.
+      Should now work properly with Apache on Windows.
 
 0.02      2009-12-20 18:25:58 Europe/Oslo
 
