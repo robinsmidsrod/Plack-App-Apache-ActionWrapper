@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+0.30.0    2010-12-20 09:16:26 Europe/Oslo
     * Changed to semantic versioning.
     * Various code cleanup.
     * RT #63825: Added patch from Ron Schmidt.
