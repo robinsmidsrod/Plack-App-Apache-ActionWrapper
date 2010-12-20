@@ -18,3 +18,6 @@ Part 3-4 could most probably be solved by using Test::TCP in some way.
 
 Part 5 can use Test::Mechanize, or possibly some parts of the Plack test
 suite.
+
+The Plack test suite has something useful prior art (see Plack::Handler
+tests).
