@@ -146,7 +146,9 @@ __END__
 =head1 SYNOPSIS
 
     ------------- .htaccess -----------------
-    AddHandler fcgi-script .fcgi
+    AddHandler fcgid-script .fcgi
+    # Enable this instead if server is using mod_fastcgi instead of mod_fcgid
+    #AddHandler fastcgi-script .fcgi
     Action psgi-script /cgi-bin/psgi.fcgi
     AddHandler psgi-script .psgi
 
@@ -207,7 +209,7 @@ So your shared hosting provider has provided you with FastCGI support to
 mitigate that problem. But because FastCGIExternalServer cannot be defined
 in .htaccess you can only run dynamic FastCGI applications.
 
-Your immediate reaction is to define C<AddHandler fcgi-script .psgi> in your
+Your immediate reaction is to define C<AddHandler fcgid-script .psgi> in your
 .htaccess and use plackup on the shebang line to run your PSGI app. But that
 doesn't work if you use local::lib, because @INC is not setup properly.
 
