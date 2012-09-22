@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+0.31.0    2012-09-22 19:32:45 Europe/Oslo
     * Fixed URL construction in Catalyst 5.9-based apps.
       Reported by Jess Robinson (castaway).
 
