@@ -29,10 +29,15 @@ sub call {
               "You probably forgot to add the following lines to .htaccess:\n",
               "    Action psgi-handler /path/to/psgi.fcgi\n",
               "    AddHandler psgi-handler .psgi\n",
+              "(or your .psgi file has compilation errors)\n",
               $self->_get_debug_info($my_env),
             ],
         ];
     };
+    # Needed for Catalyst 5.9-based apps
+    if ( exists $env->{'REDIRECT_SCRIPT_URL'} ) {
+        $env->{'REDIRECT_URL'} = $env->{'REDIRECT_SCRIPT_URL'};
+    }
     return $app->($env);
 }
 
@@ -163,6 +168,19 @@ __END__
 
     use strict;
     use warnings;
+
+    # Some shared hosting providers don't even provide you
+    # with a pointer to your files
+    BEGIN {
+        $ENV{HOME} = '/home/someuser' unless $ENV{HOME};
+    }
+
+    # Enable this if you're unable to get output to STDERR
+    # in your normal log file
+    #use IO::Handle;
+    #close STDERR;
+    #open STDERR, ">>", "$ENV{HOME}/fcgi-error.log";
+    #STDERR->autoflush(1);
 
     # Change this line if you use local::lib or need
     # specific libraries loaded for your application
